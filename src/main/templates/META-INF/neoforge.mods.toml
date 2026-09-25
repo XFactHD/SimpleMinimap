@@ -1,0 +1,28 @@
+license="LGPL v3"
+issueTrackerURL="https://www.github.com/xfacthd/simpleminimap"
+
+[[mods]]
+    modId="simpleminimap"
+    version="${mod_version}"
+    displayName="SimpleMinimap"
+    displayURL="https://www.curseforge.com/minecraft/mc-mods/simpleminimap"
+    iconFile="icon.png"
+    authors="XFactHD"
+    description='''Simple Minimap'''
+
+[[mixins]]
+    config="simpleminimap.mixins.json"
+
+[[dependencies.simpleminimap]]
+    modId="neoforge"
+    type="required"
+    versionRange="${neo_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.simpleminimap]]
+    modId="minecraft"
+    type="required"
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"
