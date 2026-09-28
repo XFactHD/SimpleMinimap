@@ -73,6 +73,7 @@ configurations {
 }
 
 dependencies {
+    jarJar(implementation("io.github.xfacthd:pnj:${pnj_version}"))
 }
 
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
