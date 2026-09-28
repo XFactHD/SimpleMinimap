@@ -1,5 +1,6 @@
 package io.github.xfacthd.simpleminimap.data;
 
+import io.github.xfacthd.simpleminimap.gui.hud.MinimapLayer;
 import io.github.xfacthd.simpleminimap.util.Utils;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
@@ -101,6 +102,7 @@ public final class MapChunkStorage implements Closeable {
     public static void onLevelUnload(LevelEvent.Unload event) {
         if (activeStorage != null && event.getLevel() == activeStorage.level) {
             MapChunkGenerator.cancelTasks();
+            MinimapLayer.reset();
             activeStorage.close();
             activeStorage = null;
         }

@@ -1,0 +1,9 @@
+{
+    "sources": [
+        {
+            "type": "minecraft:single",
+            "resource": "minecraft:map/decorations/target_point",
+            "sprite": "simpleminimap:player_marker"
+        }
+    ]
+}
