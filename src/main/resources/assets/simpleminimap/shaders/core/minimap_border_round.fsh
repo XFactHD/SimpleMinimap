@@ -26,9 +26,13 @@ void main() {
     }
 
     float factor = 1.0 - ((abs(dist) - innerRadius) / (outerRadius - innerRadius));
-    float bottomHalf = step(0.5, texCoord0.y);
     float u = mix(minInnerUV, maxInnerUV, texCoord0.x);
-    float v = mix(maxInnerUV * bottomHalf, bottomHalf + ((1.0 - bottomHalf) * minInnerUV), factor);
+    float v;
+    if (texCoord0.y < 0.5) {
+        v = mix(0.0, minInnerUV, factor);
+    } else {
+        v = mix(maxInnerUV, 1.0, factor);
+    }
     vec4 color = texture(Sampler0, vec2(u, v));
     if (color.a == 0.0) {
         discard;
