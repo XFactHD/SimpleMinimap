@@ -12,6 +12,8 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 public final class Config {
     private static final ModConfigSpec SPEC;
 
+    private static final String KEY_GRID_LINE_WIDTH = "grid_line_width";
+
     private static final String KEY_MINIMAP_POSITION = "position";
     private static final String KEY_MINIMAP_OFF_X = "offset_x";
     private static final String KEY_MINIMAP_OFF_Y = "offset_y";
@@ -19,6 +21,8 @@ public final class Config {
     private static final String KEY_MINIMAP_SCALE = "scale";
     private static final String KEY_MINIMAP_ROUND = "round";
     private static final String KEY_MINIMAP_ROTATE = "rotate";
+
+    public static final ModConfigSpec.IntValue GRID_LINE_WIDTH;
 
     public static final ModConfigSpec.EnumValue<MinimapPosition.Corner> MINIMAP_POSITION;
     public static final ModConfigSpec.IntValue MINIMAP_OFF_X;
@@ -41,6 +45,16 @@ public final class Config {
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
+
+        builder.translation(translateCategory("general")).push("general");
+        GRID_LINE_WIDTH = builder
+                .comment(
+                        "Specifies the width of chunk grid lines.",
+                        "Setting this to zero disables the chunk grid."
+                )
+                .translation(translateValue(KEY_GRID_LINE_WIDTH))
+                .defineInRange(KEY_GRID_LINE_WIDTH, 2, 1, 16);
+        builder.pop();
 
         builder.translation(translateCategory("minimap")).push("minimap");
         MINIMAP_POSITION = builder

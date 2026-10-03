@@ -1,5 +1,6 @@
 package io.github.xfacthd.simpleminimap.renderer;
 
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import io.github.xfacthd.simpleminimap.data.MapChunk;
 import io.github.xfacthd.simpleminimap.data.MapChunkStorage;
 import io.github.xfacthd.simpleminimap.util.Utils;
@@ -16,20 +17,22 @@ import java.io.Closeable;
 public final class MapRenderer implements Closeable {
     private final int tilesWidth;
     private final int tilesHeight;
+    private final int tilesPadding;
     private final MapAggregateTexture aggregateTexture;
     private final Long2LongMap chunkTimes = new Long2LongOpenHashMap();
     private long lastMinChunk = 0L;
     private long lastMaxChunk = 0L;
 
-    public MapRenderer(String name, int tilesWidth, int tilesHeight) {
+    public MapRenderer(String name, int tilesWidth, int tilesHeight, int tilesPadding) {
         this.tilesWidth = tilesWidth;
         this.tilesHeight = tilesHeight;
+        this.tilesPadding = tilesPadding;
         String debugLabel = "aggregate/" + name;
         this.aggregateTexture = new MapAggregateTexture(debugLabel, this.tilesWidth, this.tilesHeight);
         Minecraft.getInstance().getTextureManager().register(Utils.id(debugLabel), aggregateTexture);
     }
 
-    public void extract(GuiGraphicsExtractor graphics, MapChunkProvider chunkProvider, MapBlitter blitter, long minChunk, long maxChunk, int blockOffX, int blockOffZ, ScreenRectangle rect) {
+    public void extract(GuiGraphicsExtractor graphics, MapChunkProvider chunkProvider, RenderPipeline pipeline, long minChunk, long maxChunk, int blockOffX, int blockOffZ, ScreenRectangle rect) {
         cleanupChunkTimeCache(minChunk, maxChunk);
         updateAggregateTexture(chunkProvider, minChunk, maxChunk);
 
@@ -43,7 +46,16 @@ public final class MapRenderer implements Closeable {
         float v0 = ((Mth.positiveModulo(minZ, tilesHeight) * MapChunk.CHUNK_SIZE) + blockOffZ) / texHeight;
         float u1 = u0 + (rangeWidth / texWidth);
         float v1 = v0 + (rangeHeight / texHeight);
-        blitter.blit(graphics, aggregateTexture.getTextureView(), aggregateTexture.getSampler(), rect, u0, u1, v0, v1);
+        graphics.submitGuiElementRenderState(new MapContentGuiElementRenderState(
+                graphics,
+                pipeline,
+                aggregateTexture,
+                rect,
+                u0, u1, v0, v1,
+                tilesWidth,
+                tilesHeight,
+                tilesPadding
+        ));
     }
 
     private void cleanupChunkTimeCache(long minChunk, long maxChunk) {

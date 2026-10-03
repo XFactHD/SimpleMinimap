@@ -1,9 +1,7 @@
 package io.github.xfacthd.simpleminimap.gui.hud;
 
-import com.mojang.renderpearl.api.textures.GpuSampler;
-import com.mojang.renderpearl.api.textures.GpuTextureView;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import io.github.xfacthd.simpleminimap.data.MapChunk;
-import io.github.xfacthd.simpleminimap.renderer.MapBlitter;
 import io.github.xfacthd.simpleminimap.renderer.MapChunkProvider;
 import io.github.xfacthd.simpleminimap.renderer.MapRenderer;
 import io.github.xfacthd.simpleminimap.renderer.SimpleMinimapRenderPipelines;
@@ -40,7 +38,8 @@ public final class MinimapLayer implements GuiLayer {
     private static final Identifier PLAYER_MARKER = Utils.id("player_marker");
     @Nullable
     private static MapRenderer mapRenderer;
-    private static int lastTileCount = -1;
+    private static int lastVisibleTileCount = -1;
+    private static int lastPaddingTileCount = -1;
 
     @Override
     public void render(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker) {
@@ -60,8 +59,8 @@ public final class MinimapLayer implements GuiLayer {
         int blockOffZ = Mth.positiveModulo(player.getBlockZ(), MapChunk.CHUNK_SIZE);
 
         ScreenRectangle rect = prepareRenderArea(graphics, config, mapRot);
-        MapBlitter blitter = config.round ? MinimapLayer::blitRoundMap : MapBlitter.DEFAULT;
-        getMapRenderer(config).extract(graphics, MapChunkProvider.DEFAULT, blitter, minChunk, maxChunk, blockOffX, blockOffZ, rect);
+        RenderPipeline pipeline = config.round ? SimpleMinimapRenderPipelines.MAP_CONTENT_ROUND : SimpleMinimapRenderPipelines.MAP_CONTENT_SQUARE;
+        getMapRenderer(config).extract(graphics, MapChunkProvider.DEFAULT, pipeline, minChunk, maxChunk, blockOffX, blockOffZ, rect);
         teardownRenderArea(graphics, config);
 
         extractMapBorder(graphics, config);
@@ -78,7 +77,7 @@ public final class MinimapLayer implements GuiLayer {
         int visibleTiles = (int) (DEFAULT_TILE_COUNT * scale);
         int paddingTiles = BASE_PADDING;
         if (!round && rotate) {
-            paddingTiles += (int)(2F * (scale - 1F));
+            paddingTiles += Mth.ceil(2F * (Math.max(0F, scale - .5F) * 1.75F));
         }
         return new MapConfig(
                 position.computeX(graphics.guiWidth(), mapSize),
@@ -121,11 +120,6 @@ public final class MinimapLayer implements GuiLayer {
         }
     }
 
-    private static void blitRoundMap(GuiGraphicsExtractor graphics, GpuTextureView texture, GpuSampler sampler, ScreenRectangle rect, float u0, float u1, float v0, float v1) {
-        int visibleTiles = (texture.getWidth(0) / MapChunk.CHUNK_SIZE) - BASE_PADDING;
-        graphics.submitGuiElementRenderState(new RoundMinimapContentGuiElementRenderState(graphics, texture, sampler, rect, u0, u1, v0, v1, visibleTiles, BASE_PADDING));
-    }
-
     private static void extractMapBorder(GuiGraphicsExtractor graphics, MapConfig config) {
         int x = config.x - MINIMAP_BORDER_WIDTH;
         int y = config.y - MINIMAP_BORDER_WIDTH;
@@ -154,13 +148,14 @@ public final class MinimapLayer implements GuiLayer {
     }
 
     private static MapRenderer getMapRenderer(MapConfig config) {
-        int tileCount = config.getTotalTiles();
-        if (mapRenderer == null || tileCount != lastTileCount) {
+        if (mapRenderer == null || config.visibleTiles != lastVisibleTileCount || config.paddingTiles != lastPaddingTileCount) {
             if (mapRenderer != null) {
                 mapRenderer.close();
             }
-            mapRenderer = new MapRenderer("minimap", tileCount, tileCount);
-            lastTileCount = tileCount;
+            int tileCount = config.getTotalTiles();
+            mapRenderer = new MapRenderer("minimap", tileCount, tileCount, config.paddingTiles);
+            lastVisibleTileCount = tileCount;
+            lastPaddingTileCount = config.paddingTiles;
         }
         return mapRenderer;
     }
