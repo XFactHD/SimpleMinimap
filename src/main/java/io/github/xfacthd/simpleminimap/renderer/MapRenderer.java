@@ -42,8 +42,8 @@ public final class MapRenderer implements Closeable {
         int minZ = ChunkPos.getZ(minChunk);
         int rangeWidth = (ChunkPos.getX(maxChunk) - minX) * MapChunk.CHUNK_SIZE;
         int rangeHeight = (ChunkPos.getZ(maxChunk) - minZ) * MapChunk.CHUNK_SIZE;
-        float u0 = ((Mth.positiveModulo(minX, tilesWidth) * MapChunk.CHUNK_SIZE) + blockOffX) / texWidth;
-        float v0 = ((Mth.positiveModulo(minZ, tilesHeight) * MapChunk.CHUNK_SIZE) + blockOffZ) / texHeight;
+        float u0 = ((Mth.positiveModulo(minX, tilesWidth) * MapChunk.CHUNK_SIZE) + .5F + blockOffX) / texWidth;
+        float v0 = ((Mth.positiveModulo(minZ, tilesHeight) * MapChunk.CHUNK_SIZE) + .5F + blockOffZ) / texHeight;
         float u1 = u0 + (rangeWidth / texWidth);
         float v1 = v0 + (rangeHeight / texHeight);
         graphics.submitGuiElementRenderState(new MapContentGuiElementRenderState(
