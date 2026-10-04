@@ -1,6 +1,7 @@
 package io.github.xfacthd.simpleminimap.util;
 
 import io.github.xfacthd.simpleminimap.SimpleMinimap;
+import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.ChunkPos;
 
@@ -9,6 +10,24 @@ import java.util.function.LongConsumer;
 public final class Utils {
     public static Identifier id(String path) {
         return Identifier.fromNamespaceAndPath(SimpleMinimap.MOD_ID, path);
+    }
+
+    public static ChunkRange getViewDistanceRange(long centerChunk) {
+        return getViewDistanceRange(centerChunk, Minecraft.getInstance().options.getEffectiveRenderDistance());
+    }
+
+    public static ChunkRange getViewDistanceRange(long centerChunk, int viewDist) {
+
+        int playerChunkX = ChunkPos.getX(centerChunk);
+        int playerChunkZ = ChunkPos.getZ(centerChunk);
+        return new ChunkRange(
+                ChunkPos.pack(playerChunkX - viewDist, playerChunkZ - viewDist),
+                ChunkPos.pack(playerChunkX + viewDist + 1, playerChunkZ + viewDist + 1)
+        );
+    }
+
+    public static void forEachInRange(ChunkRange range, LongConsumer consumer) {
+        forEachInRange(range.minChunk(), range.maxChunk(), consumer);
     }
 
     public static void forEachInRange(long minChunk, long maxChunk, LongConsumer consumer) {
@@ -21,6 +40,10 @@ public final class Utils {
                 consumer.accept(ChunkPos.pack(x, z));
             }
         }
+    }
+
+    public static void forEachInRangeOnlyFirst(ChunkRange rangeOne, ChunkRange rangeTwo, LongConsumer consumer) {
+        forEachInRangeOnlyFirst(rangeOne.minChunk(), rangeOne.maxChunk(), rangeTwo.minChunk(), rangeTwo.maxChunk(), consumer);
     }
 
     /// Iterates over all positions present in the first range but absent from the second range
