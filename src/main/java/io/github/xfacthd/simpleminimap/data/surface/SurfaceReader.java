@@ -2,6 +2,8 @@ package io.github.xfacthd.simpleminimap.data.surface;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import net.minecraft.util.profiling.Profiler;
+import net.minecraft.util.profiling.Zone;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -23,8 +25,10 @@ public abstract sealed class SurfaceReader permits DefaultSurfaceReader {
     }
 
     public static ChunkSurfaceInfo read(Level level, int chunkX, int chunkZ) {
-        // TODO: handle dimensions with a ceiling like the Nether (level.dimensionType().hasCeiling())
-        return DefaultSurfaceReader.INSTANCE.read(level, ChunkPos.pack(chunkX, chunkZ));
+        try (Zone ignored = Profiler.get().zone("SimpleMinimap - Read Chunk Heightmap")) {
+            // TODO: handle dimensions with a ceiling like the Nether (level.dimensionType().hasCeiling())
+            return DefaultSurfaceReader.INSTANCE.read(level, ChunkPos.pack(chunkX, chunkZ));
+        }
     }
 
     @SuppressWarnings("ConstantValue")
